@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Filament\Resources\Loans\Pages;
+
+use App\Filament\Resources\Loans\LoanResource;
+use Filament\Resources\Pages\ManageRecords;
+
+class ManageLoans extends ManageRecords
+{
+    protected static string $resource = LoanResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+
+        ];
+    }
+}
