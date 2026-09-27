@@ -1,75 +1,62 @@
 <?php
 
-namespace App\Filament\Resources\Books;
+namespace App\Filament\Resources\BookCopies;
 
-use App\Filament\Resources\Books\Pages\ManageBooks;
-use App\Models\Book;
+use App\Filament\Resources\BookCopies\Pages\ManageBookCopies;
+use App\Models\BookCopy;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class BookResource extends Resource
+class BookCopyResource extends Resource
 {
-    protected static ?string $model = Book::class;
+    protected static ?string $model = BookCopy::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::BookOpen;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::ClipboardDocument;
 
     protected static string | UnitEnum | null $navigationGroup = 'Book Management';
 
-    protected static ?string $recordTitleAttribute = 'title';
+    protected static ?string $recordTitleAttribute = 'barcode';
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Select::make('category_id')
-                    ->relationship('category', 'name')
+                Select::make('book_id')
+                    ->relationship('book', 'title')
                     ->required(),
-                TextInput::make('title')
+                TextInput::make('barcode')
                     ->required(),
-                TextInput::make('isbn')
-                    ->required(),
-                TextInput::make('publisher'),
-                TextInput::make('publication_year')
-                    ->numeric(),
-                Textarea::make('summary')
-                    ->columnSpanFull(),
-                FileUpload::make('image_url')
-                    ->image(),
+                TextInput::make('status')
+                    ->required()
+                    ->default('available'),
+                TextInput::make('shelf_location'),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('title')
+            ->recordTitleAttribute('barcode')
             ->columns([
-                TextColumn::make('category.name')
+                TextColumn::make('book.title')
                     ->searchable(),
-                TextColumn::make('title')
+                TextColumn::make('barcode')
                     ->searchable(),
-                TextColumn::make('isbn')
+                TextColumn::make('status')
                     ->searchable(),
-                TextColumn::make('publisher')
+                TextColumn::make('shelf_location')
                     ->searchable(),
-                TextColumn::make('publication_year')
-                    ->numeric()
-                    ->sortable(),
-                ImageColumn::make('image_url'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -83,15 +70,14 @@ class BookResource extends Resource
                 //
             ])
             ->recordActions([
-                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make()
-                    ->before(function ($record) {
-                        if ($record->copies()->exists()) {
+                ->before(function ($record) {
+                        if ($record->loans()->exists()) {
                             \Filament\Notifications\Notification::make()
                                 ->danger()
                                 ->title('Cannot delete this book')
-                                ->body('This book still has copies. Delete or retire the copies first.')
+                                ->body('This book still has loans. Delete or retire the loans first.')
                                 ->send();
 
                             throw new \Filament\Support\Exceptions\Halt;
@@ -108,7 +94,7 @@ class BookResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ManageBooks::route('/'),
+            'index' => ManageBookCopies::route('/'),
         ];
     }
 }

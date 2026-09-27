@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Loans\Pages;
 
 use App\Filament\Resources\Loans\LoanResource;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 
 class ManageLoans extends ManageRecords
@@ -12,7 +13,7 @@ class ManageLoans extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-
+            // CreateAction::make(),
         ];
     }
 }

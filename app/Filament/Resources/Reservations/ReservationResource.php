@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Filament\Resources\Loans;
+namespace App\Filament\Resources\Reservations;
 
-use App\Filament\Resources\Loans\Pages\ManageLoans;
-use App\Models\Loan;
+use App\Filament\Resources\Reservations\Pages\ManageReservations;
+use App\Models\Reservation;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -17,65 +17,62 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use App\Actions\ReturnBook;
-use Filament\Actions\Action;
 use UnitEnum;
 
-class LoanResource extends Resource
+class ReservationResource extends Resource
 {
-    protected static ?string $model = Loan::class;
+    protected static ?string $model = Reservation::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::ClipboardDocumentList;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::ClipboardDocumentCheck;
 
-    
     protected static string | UnitEnum | null $navigationGroup = 'Loan Management';
 
-    protected static ?string $recordTitleAttribute = 'borrowed_at';
+    protected static ?string $recordTitleAttribute = 'reserved_at';
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Select::make('copy_id')
-                    ->relationship(
-                        name: 'copy',
-                        titleAttribute: 'barcode',
-                        modifyQueryUsing: fn ($query) => $query->where('status', 'available'),
-                    )
+                Select::make('book_id')
+                    ->relationship('book', 'title')
+                    ->preload()
+                    ->searchable()
                     ->required(),
                 Select::make('user_id')
                     ->relationship('user', 'name')
+                    ->preload()
+                    ->searchable()
                     ->required(),
-                DateTimePicker::make('borrowed_date')
+                DateTimePicker::make('reservation_date')
+                    ->default(now())
                     ->required(),
-                DateTimePicker::make('due_date')
+                Select::make('status')
+                    ->options([
+                        'pending' => 'Pending',
+                        'approved' => 'Approved',
+                        'cancelled' => 'Cancelled',
+                    ])
+                    ->default('pending')
                     ->required(),
-                DateTimePicker::make('returned_date'),
-                TextInput::make('status')
-                    ->required()
-                    ->default('borrowed'),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('borrowed_at')
+            ->recordTitleAttribute('reserved_at')
             ->columns([
-                TextColumn::make('copy.barcode')
+                TextColumn::make('book.title')
+                    ->label('book')
                     ->searchable(),
                 TextColumn::make('user.name')
+                    ->label('member')
                     ->searchable(),
-                TextColumn::make('borrowed_date')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('due_date')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('returned_date')
+                TextColumn::make('reservation_date')
                     ->dateTime()
                     ->sortable(),
                 TextColumn::make('status')
+                    ->badge()
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -92,15 +89,6 @@ class LoanResource extends Resource
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
-                Action::make('return')
-                    ->label('Return')
-                    ->icon('heroicon-o-arrow-uturn-left')
-                    ->color('success')
-                    ->visible(fn ($record) => $record->status === 'borrowed')
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                     app(ReturnBook::class)->execute($record);
-                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -112,7 +100,7 @@ class LoanResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ManageLoans::route('/'),
+            'index' => ManageReservations::route('/'),
         ];
     }
 }
