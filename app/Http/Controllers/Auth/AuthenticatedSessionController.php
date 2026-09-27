@@ -34,7 +34,7 @@ class AuthenticatedSessionController extends Controller
             return redirect('/admin');
         }
 
-        return redirect('/member');
+        return redirect('/dashboard');
     }
 
     /**
