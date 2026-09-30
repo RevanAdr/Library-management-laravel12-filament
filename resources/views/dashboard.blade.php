@@ -166,15 +166,12 @@
         <h2 class="mb-6 text-2xl font-bold text-gray-900">
             Library Books
         </h2>
-
-        {{-- Book Grid --}}
+        
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
 
             @foreach ($books as $book)
 
                 <div class="bg-neutral-primary-soft block max-w-sm p-6 border border-default rounded-base shadow-xs">
-
-                    {{-- Book Image --}}
                     <a href="#">
                         @if ($book->image_url)
                             <img
