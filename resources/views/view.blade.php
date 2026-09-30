@@ -6,7 +6,7 @@
     <title>Perpustakaan Cendekia</title>
     
     <!-- Script Tailwind CDN (Pastikan temanmu menyesuaikan ini dengan Vite jika mereka sudah setup Node.js) -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
      @vite('resources/css/app.css')
 </head>
 <body class="bg-linear-to-br from-[#f6f3f0] to-[#eaddd7] min-h-screen flex items-center justify-center p-4 md:p-10 font-sans">

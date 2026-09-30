@@ -23,6 +23,17 @@ class BorrowBook
                 );
             }
 
+            if ($user->loans()
+                ->where('status', 'borrowed')
+                ->whereHas('copy', function ($query) use ($copy) {
+                    $query->where('book_id', $copy->book_id);
+                })
+                ->exists()) {
+                throw new RuntimeException(
+                    'You have already borrowed this book.'
+                );
+            }
+
             // 2. Create the loan
             $loan = Loan::create([
                 'copy_id' => $copy->copy_id,
