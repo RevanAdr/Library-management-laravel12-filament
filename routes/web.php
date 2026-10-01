@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Book;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\DashboardController;
 
 Route::post('/logout', function (Request $request) {
     Auth::logout();
@@ -20,30 +21,14 @@ Route::get('/', function () {
     return view('auth/login');
 });
 
+// Route::get('/my-fines', function () {
+//     return view('fine');
+// });
 
-Route::get('/dashboard', function () {
-    $user = auth()->user();
 
-    $books = Book::with([
-        'category',
-        'authors',
-        'copies' => function ($query) {
-            $query->where('status', 'available');
-        },
-    ])->paginate(12);
-
-    $borrowedBookIds = $user->loans()
-        ->where('status', 'borrowed')
-        ->with('copy')
-        ->get()
-        ->pluck('copy.book_id')
-        ->unique();
-
-    return view('dashboard', compact(
-        'books',
-        'borrowedBookIds'
-    ));
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::post('/books/{book}/borrow', [BookController::class, 'borrow'])
     ->middleware(['auth', 'verified'])
